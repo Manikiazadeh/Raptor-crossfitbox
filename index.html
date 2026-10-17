@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>سانس‌های رپتور</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: one narrow column, day toggle on top, timeline of session rows with a gold "now" marker */
+:root{
+  --navy:#0e1830; --navy-2:#16223f; --line:#26345a;
+  --maroon:#7a1f2b; --gold:#d4a64a; --ink:#eef0f6; --muted:#9aa4c0;
+  --pro:#2b3d6e;
+  --f-display:"Vazirmatn",Tahoma,sans-serif; --f-body:"Vazirmatn",Tahoma,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--navy);color:var(--ink);font-family:var(--f-body);direction:rtl;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:4px;border-bottom:2px solid var(--maroon);padding-bottom:14px}
+.eyebrow{color:var(--gold);font-size:12px;letter-spacing:.08em;font-weight:700}
+h1{font-family:var(--f-display);font-weight:900;font-size:30px;margin:0;line-height:1.2;text-wrap:balance}
+h1 span{color:var(--gold)}
+.today{color:var(--muted);font-size:13px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--navy-2);padding:5px;border-radius:12px}
+.tabs button{font:700 15px var(--f-body);color:var(--muted);background:transparent;border:0;border-radius:9px;padding:11px 8px;cursor:pointer}
+.tabs button small{display:block;font-weight:400;font-size:11px;margin-top:2px}
+.tabs button[aria-selected="true"]{background:var(--maroon);color:var(--ink)}
+.tabs button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.list{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:92px 1fr;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);align-items:start}
+.time{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;direction:ltr;text-align:right;color:var(--gold);padding-top:2px}
+.dur{display:block;font-size:11px;color:var(--muted);font-weight:400;direction:rtl}
+.body{min-width:0;display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13.5px;padding:4px 10px;border-radius:999px;background:var(--navy-2);border:1px solid var(--line)}
+.chip.pv{border-color:var(--gold);color:var(--gold)}
+.chip.pv::after{content:" · خصوصی";font-size:11px;opacity:.85}
+.tag{font-size:13.5px;font-weight:700;padding:4px 10px;border-radius:6px}
+.tag.w{background:var(--maroon)}
+.tag.p{background:var(--pro)}
+.row.now{background:linear-gradient(to left,rgba(212,166,74,.12),transparent);border-right:3px solid var(--gold);padding-right:10px;margin-right:-13px}
+.row.now .time::before{content:"در حال برگزاری";display:block;font-size:10px;color:var(--navy);background:var(--gold);border-radius:4px;padding:1px 5px;width:max-content;margin-bottom:4px;direction:rtl}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:5px;vertical-align:middle}
+footer{font-size:12px;color:var(--muted);text-align:center;padding-top:6px}
+@media (max-width:380px){.row{grid-template-columns:78px 1fr}.time{font-size:14px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">RAPTOR CROSSFIT BOX</div>
+    <h1>برنامه‌ی سانس‌های <span>رپتور</span></h1>
+    <div class="today" id="today">ساعت‌ها به وقت تهران</div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="t-even" aria-selected="true" data-k="even">روزهای زوج<small>شنبه · دوشنبه · چهارشنبه</small></button>
+    <button role="tab" id="t-odd" aria-selected="false" data-k="odd">روزهای فرد<small>یکشنبه · سه‌شنبه · پنجشنبه</small></button>
+  </div>
+
+  <div class="list" id="list" role="tabpanel"></div>
+
+  <div class="legend">
+    <span><i style="background:var(--gold)"></i>کلاس خصوصی</span>
+    <span><i style="background:var(--maroon)"></i>سانس بانوان</span>
+    <span><i style="background:var(--pro)"></i>تمرین حرفه‌ای‌ها</span>
+  </div>
+  <footer>Raptor CrossFit Box</footer>
+</div>
+
+<script>
+const E="عرفان اقبالی",S="شاهین میرزایی",SI="سینا محقق",D="دانیال نیر",SO="سروش صداقت",M={n:"مرتضی صداقت",pv:1};
+const W={tag:"بانوان",c:"w"},P={tag:"تمرین حرفه‌ای‌ها",c:"p"};
+const data={
+ even:[
+  ["6:30","8:00",[E,S]],["7:00","8:30",[SI]],["8:00","9:30",[E,S]],["10:30","12:00",[W]],
+  ["12:00","13:30",[SI]],["13:30","15:00",[D]],["15:00","17:00",[P]],
+  ["17:00","18:30",[M,SO,SI]],["17:30","19:00",[S]],["18:30","20:00",[M,SO,E]],["20:00","21:30",[M,SO,S,SI]]
+ ],
+ odd:[
+  ["7:00","8:30",[SI]],["7:30","9:30",[M]],["8:00","9:30",[E]],["10:00","14:00",[W]],
+  ["15:00","17:00",[P]],["17:00","18:30",[M,SO]],["18:30","20:00",[M,SO,SI]],["20:00","21:30",[S]]
+ ]
+};
+const fa=s=>s.replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
+const mins=t=>{const[h,m]=t.split(":").map(Number);return h*60+m};
+function tehranNow(){
+  try{
+    const p=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Tehran",weekday:"short",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date());
+    const g=k=>p.find(x=>x.type===k).value;
+    return {wd:g("weekday"),m:(+g("hour")%24)*60+ +g("minute")};
+  }catch(e){return null}
+}
+const now=tehranNow();
+const evenDays=["Sat","Mon","Wed"],oddDays=["Sun","Tue","Thu"];
+const faDay={Sat:"شنبه",Sun:"یکشنبه",Mon:"دوشنبه",Tue:"سه‌شنبه",Wed:"چهارشنبه",Thu:"پنجشنبه",Fri:"جمعه"};
+let todayKey=null;
+if(now){
+  todayKey=evenDays.includes(now.wd)?"even":oddDays.includes(now.wd)?"odd":null;
+  document.getElementById("today").textContent=now.wd==="Fri"?"امروز جمعه است و باشگاه سانس ندارد":"امروز "+faDay[now.wd]+" است · ساعت‌ها به وقت تهران";
+}
+function render(k){
+  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.k===k));
+  const list=document.getElementById("list");list.innerHTML="";
+  data[k].forEach(([a,b,items])=>{
+    const r=document.createElement("div");r.className="row";
+    if(now&&k===todayKey&&now.m>=mins(a)&&now.m<mins(b))r.classList.add("now");
+    const d=mins(b)-mins(a),dur=d%60?fa(String(d))+" دقیقه":fa(String(d/60))+" ساعت";
+    r.innerHTML=`<div class="time">${fa(a)} – ${fa(b)}<span class="dur">${dur}</span></div><div class="body"></div>`;
+    const body=r.querySelector(".body");
+    items.forEach(it=>{const s=document.createElement("span");
+      if(typeof it==="string"){s.className="chip";s.textContent=it}
+      else if(it.tag){s.className="tag "+it.c;s.textContent=it.tag}
+      else{s.className="chip pv";s.textContent=it.n}
+      body.appendChild(s)});
+    list.appendChild(r);
+  });
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>render(b.dataset.k)));
+render(todayKey||"even");
+</script>
+</body>
+</html>
